@@ -72,12 +72,12 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import org.eclipse.wb.swing.FocusTraversalOnArray;
+//import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 import java.awt.Component;
 
 public class Machine8080 implements PropertyChangeListener, MouseListener,
-		FocusListener, ItemListener {
+		FocusListener, ItemListener,ActionListener {
 
 	public static final int MEMORY_SIZE_K = 64; // in K
 	private static final int MEMORY_SIZE_BYTES = MEMORY_SIZE_K * 1024;
@@ -106,22 +106,21 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 				try {
 					Machine8080 window = new Machine8080();
 					window.frm8080Emulator.setVisible(true);
-					window.startMachine();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}// try
 			}// catch
 		});
 	}// main
-
-	private void startMachine() {
+	
+	private void appInit(){
 		restoreMachineState();
 		dc = new DeviceController();
 		au = new ArithmeticUnit(ccr);
 		cpu = new CentralProcessingUnit(mm, ccr, au, wrs,dc);
 		cpu.setProgramCounter(displayProgramCounter);
-		// displayProgramCounter = (Short) null;
 	}
+
 
 	/**
 	 * Create the application.
@@ -136,6 +135,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		}// try
 
 		initialize();
+		appInit();
 	}// Constructor - Machine8080()
 
 	@Override
@@ -484,6 +484,51 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		}// inner if
 		return result;
 	}
+	@Override
+	public void actionPerformed(ActionEvent ae) {
+		
+		switch (ae.getActionCommand()){
+		case "btnRun":
+			cpu.startRunMode();
+			loadTheDisplay();
+			break;
+		case "btnStep":
+			cpu.startStepMode((int) spinnerStepCount.getValue());
+			loadTheDisplay();
+			break;
+		case "btnStop":
+			//doBtnStop();
+			break;
+		case "btnRefresh":
+			displayMainMemory();
+			break;
+			
+		case "mnuFileNew":
+			//doMnuFileNew();
+			break;
+		case "mnuFileReset":
+			//doMnuFileReset();
+			break;
+		case "mnuFileOpen":
+			//doMnuFileOpen();
+			break;
+		case "mnuFileSave":
+			//doMnuFileSave();
+			break;
+		case "mnuFileSaveAs":
+			////doMnuFileSaveAs();
+			break;
+		case "mnuFileClose":
+			//doMnuFileClose();
+			break;
+		case "mnuToolsLoadMemoryFromFile":
+			//doMnuToolsLoadMemoryFromFile();
+			break;
+		case "mnuToolsSaveMemoryDisplay":
+			//doMnuToolSaveMemoryDisplay();
+			break;
+		}//switch	
+	}//actionPerformed
 
 	/**
 	 * Initialize the contents of the
@@ -511,6 +556,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		menuBar.add(mnuFile);
 
 		JMenuItem mnuFileNew = new JMenuItem("New");
+		mnuFileNew.setActionCommand("mnuFileNew");
 		mnuFileNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				short initialValue = (short) 0X0000;
@@ -531,6 +577,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		mnuFile.add(mnuFileNew);
 
 		JMenuItem mnuFileReset = new JMenuItem("Reset");
+		mnuFileReset.setActionCommand("mnuFileReset");
 		mnuFileReset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				restoreMachineState();
@@ -539,6 +586,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		mnuFile.add(mnuFileReset);
 
 		JMenuItem mnuFileOpen = new JMenuItem("Open");
+		mnuFileOpen.setActionCommand("mnuFileOpen");
 		mnuFileOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
@@ -567,6 +615,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		mnuFile.addSeparator();
 
 		JMenuItem mnuFileSave = new JMenuItem("Save");
+		mnuFileSave.setActionCommand("mnuFileSave");
 		mnuFileSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				saveMachineState(DEFAULT_STATE_FILE);
@@ -575,6 +624,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		mnuFile.add(mnuFileSave);
 
 		JMenuItem mnuFileSaveAs = new JMenuItem("Save As...");
+		mnuFileSaveAs.setActionCommand("mnuFileSaveAs");
 		mnuFileSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
@@ -603,6 +653,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		mnuFile.addSeparator();
 
 		JMenuItem mnuFileClose = new JMenuItem("Close");
+		mnuFileClose.setActionCommand("mnuFileClose");
 		mnuFileClose.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveMachineState();
@@ -616,6 +667,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 
 		JMenuItem mnuToolsLoadMemoryFromFile = new JMenuItem(
 				"Load Memory From File...");
+		mnuToolsLoadMemoryFromFile.setActionCommand("mnuToolsLoadMemoryFromFile");
 		mnuToolsLoadMemoryFromFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				LoadMemoryImage lmi = new LoadMemoryImage(MEMORY_SIZE_BYTES,
@@ -648,6 +700,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 
 		JMenuItem mnuToolsSaveMemoryDisplay = new JMenuItem(
 				"Save Memory Display to File...");
+		mnuToolsSaveMemoryDisplay.setActionCommand("mnuToolsSaveMemoryDisplay");
 		mnuToolsSaveMemoryDisplay.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
@@ -961,28 +1014,22 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		pnlRun.setLayout(null);
 
 		JButton btnRun = new JButton("RUN");
-		btnRun.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				cpu.startRunMode();
-				loadTheDisplay();
-			}// actionPerformed
-		});
+		btnRun.setActionCommand("btnRun");
+		btnRun.addActionListener(this);
 		btnRun.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnRun.setBounds(10, 23, 90, 42);
 		pnlRun.add(btnRun);
 
 		JButton btnStep = new JButton("STEP");
-		btnStep.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				cpu.startStepMode((int) spinnerStepCount.getValue());
-				loadTheDisplay();
-			}// actionPerformed
-		});
+		btnStep.setActionCommand("btnStep");
+		btnStep.addActionListener(this);
 		btnStep.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnStep.setBounds(110, 23, 90, 42);
 		pnlRun.add(btnStep);
 
 		JButton btnStop = new JButton("STOP");
+		btnStop.setActionCommand("btnStop");
+		btnStop.addActionListener(this);
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnStop.setBounds(10, 76, 90, 42);
 		pnlRun.add(btnStop);
@@ -1184,14 +1231,13 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		scrollPane.setViewportView(txtLog);
 		
 		JButton btnRefresh = new JButton("Refresh");
-		btnRefresh.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				displayMainMemory();
-			}
-		});
+		btnRefresh.setActionCommand("btnRefresh");
+		btnRefresh.addActionListener(this);
 		btnRefresh.setBounds(490, 13, 110, 35);
 		pnlMainMemory.add(btnRefresh);
-		pnlMainMemory.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{ftfMemoryStart, ftfMemoryLength}));
+		//pnlMainMemory.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{ftfMemoryStart, ftfMemoryLength}));
+		
+//		appInit();
 	}// Initialize +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	// Declarations
@@ -1273,4 +1319,6 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 	public void focusGained(FocusEvent arg0) {
 		// Not implemented
 	}// focusGained
+
+
 }// class Machine8080
