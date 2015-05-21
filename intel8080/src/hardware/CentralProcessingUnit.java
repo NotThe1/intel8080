@@ -864,7 +864,15 @@ public class CentralProcessingUnit implements MemoryListener {
 	}// conditionTrue
 
 	private void badOpCode() {
-		String opCodeOctal = Stuff.opCodeToOctal(opCode);
+		StringBuilder sb = new StringBuilder();
+		String rawCode = valueToBinaryString(opCode,Byte.SIZE);
+		sb.append(rawCode.substring(0, 2));
+		sb.append(" ");
+		sb.append(rawCode.substring(2, 5));
+		sb.append(" ");
+		sb.append(rawCode.substring(5, 8));
+
+		String opCodeOctal = sb.toString();
 		System.err
 				.printf("Bad OpCode %02X: %s  - Page %02X with YYY = %02X with ZZZ = %02X%n",
 						opCode, opCodeOctal, page, yyy, zzz);
@@ -872,7 +880,22 @@ public class CentralProcessingUnit implements MemoryListener {
 		return;
 	}//
 	
-
+	public static String valueToBinaryString(int value, int wordSize) {
+		// int valuex = (int)value;
+		String tempAns = Integer.toBinaryString(value);
+		int len = tempAns.length();
+		if (len < wordSize) {
+			for (int i = len; i < Byte.SIZE; i++) {
+				tempAns = "0" + tempAns;
+			}
+		} else if (len > wordSize) {
+			tempAns = tempAns.substring(Integer.SIZE - wordSize, Integer.SIZE);
+		} else {
+			// tempAns is OK
+		}// if
+		return tempAns;
+		
+	}//valueToBinaryString
 //	private byte getByteImmediate() {
 //		return mm.getByte(programCounter++);
 //	}// getImmediateByte
