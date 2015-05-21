@@ -94,8 +94,8 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 	private String currentMachineName = DEFAULT_STATE_FILE;
 	private int displayProgramCounter = 0; // need place to hold until we have
 												// a CPU
-	private short memoryStart;
-	private short memoryLength;
+	private int memoryStart;
+	private int memoryLength;
 
 	/**
 	 * Launch the application.
@@ -171,7 +171,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 					thisElement.setSelectionEnd(startSel + 54);
 					
 					MemoryEdit.showDialog(null, null, mm,
-							(short) intAddress);
+							 intAddress);
 					displayMainMemory();
 				}// the main memory text area
 			}//if instanceOf
@@ -293,7 +293,7 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		ftfReg_E.setValue(getByteDisplayValue(wrs.getReg(Reg.E)));
 		ftfReg_H.setValue(getByteDisplayValue(wrs.getReg(Reg.H)));
 		ftfReg_L.setValue(getByteDisplayValue(wrs.getReg(Reg.L)));
-		short sp = wrs.getStackPointer();
+		int sp = wrs.getStackPointer();
 		String spDisplay = getWordDisplayValue(sp);
 		ftfReg_SP.setValue(spDisplay);
 		// ftfReg_SP.setValue(getDisplayValue(wrs.getStackPointer(), 4));

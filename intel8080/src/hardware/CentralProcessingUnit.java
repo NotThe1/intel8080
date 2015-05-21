@@ -7,8 +7,8 @@ import device.DeviceController;
 public class CentralProcessingUnit implements MemoryListener {
 
 	private boolean running = false;
-//	private boolean stepMode = false;
-//	private int stepCount = 0;
+	// private boolean stepMode = false;
+	// private int stepCount = 0;
 
 	int page;
 	int yyy;
@@ -50,7 +50,7 @@ public class CentralProcessingUnit implements MemoryListener {
 	}// Constructor - CentralProcessingUnit
 
 	public CentralProcessingUnit(MainMemory mm, ConditionCodeRegister ccr,
-			ArithmeticUnit au, WorkingRegisterSet wrs,DeviceController dc) {
+			ArithmeticUnit au, WorkingRegisterSet wrs, DeviceController dc) {
 		this.mm = mm;
 		this.memorySizeInBytes = mm.getMemorySizeInBytes();
 		this.ccr = ccr;
@@ -72,16 +72,16 @@ public class CentralProcessingUnit implements MemoryListener {
 		}// for
 		setRunning(false);
 	}// startStepMode
-	
-	public void startRunMode(){
+
+	public void startRunMode() {
 		int opCodeLength = 0;
 		setRunning(true);
-		while (running){
+		while (running) {
 			opCode = mm.getByte(programCounter);
 			opCodeLength = execute8080Instruction(opCode);
 			incrementProgramCounter(opCodeLength);
-		}//while
-	}//startRunMode
+		}// while
+	}// startRunMode
 
 	public boolean isRunning() {
 		return running;
@@ -101,12 +101,7 @@ public class CentralProcessingUnit implements MemoryListener {
 
 	public void incrementProgramCounter(int count) {
 		this.programCounter += count;
-	}
-
-	// public void singleStep() {
-	// opCode = mm.getByte(programCounter++);
-	// decode8080Instruction(opCode);
-	// }// singleStep
+	}// incrementProgramCounter
 
 	private int execute8080Instruction(byte opCode) {
 		// XX YYY ZZZ : XX = page number
@@ -155,8 +150,8 @@ public class CentralProcessingUnit implements MemoryListener {
 			opCodeSize = 1;
 			break;
 		case 1: // zzz = 001
-			regPair = registerPairDecodeSet1[yyy >> 1]; // only want the two hig
-														// bits
+			regPair = registerPairDecodeSet1[yyy >> 1]; // only want the two
+														// high bits
 			if ((yyy & 0X1) == 0) { // LXI Register Pair len =3, cycles = 10
 				byte hiByte = mm.getByte(programCounter + 1);
 				byte loByte = mm.getByte(programCounter + 2);
@@ -182,17 +177,17 @@ public class CentralProcessingUnit implements MemoryListener {
 				opCodeSize = 3;
 				// System.out.printf("LXI %s%n", regPair);
 			} else { // DAD RegisterPair len =1, cycles = 10
-				//System.out.printf("DAD %s%n", regPair);
+				// System.out.printf("DAD %s%n", regPair);
 				ccr.clearAllCodes();
-				short operand1 = wrs.getDoubleReg(regPair);
-				short operand2 = wrs.getDoubleReg(Reg.HL);
-				short result = au.add(operand1, operand2);
+				int operand1 = wrs.getDoubleReg(regPair);
+				int operand2 = wrs.getDoubleReg(Reg.HL);
+				int result = au.add(operand1, operand2);
 				wrs.setDoubleReg(Reg.HL, result);
 				opCodeSize = 1;
 			}// if
 			break;
 		case 2: // zzz = 010
-			// short memoryLocation;
+			// int memoryLocation;
 			switch (yyy) {
 			case 0: // yyy = 000 STAX B len =1, cycles = 1
 				memoryLocation = wrs.getDoubleReg(Reg.BC);
@@ -271,7 +266,7 @@ public class CentralProcessingUnit implements MemoryListener {
 					reportInvalidMemoryReference(memoryLocation);
 				} else {
 					wrs.setReg(Reg.A, mm.getByte(memoryLocation));
-					//mm.setByte(memoryLocation, wrs.getReg(Reg.A));
+					// mm.setByte(memoryLocation, wrs.getReg(Reg.A));
 					opCodeSize = 3;
 				}//
 					// System.out.printf("LDA %s%n", "");
@@ -286,19 +281,19 @@ public class CentralProcessingUnit implements MemoryListener {
 														// bits
 			if ((yyy & 0X1) == 0) { // INX Register Pair len =1, cycles = 5
 				if (regPair == Reg.SP) {// stack Pointer
-					short ans = (short) (wrs.getStackPointer() + 1);
+					int ans = wrs.getStackPointer() + 1;
 					wrs.setStackPointer(ans);
 				} else {
-					short ans = (short) (wrs.getDoubleReg(regPair) + 1);
+					int ans = wrs.getDoubleReg(regPair) + 1;
 					wrs.setDoubleReg(regPair, ans);
 				}// inner if
 					// System.out.printf("INX %s%n", regPair);
 			} else { // DCX RegisterPair len =1, cycles = 5
 				if (regPair == Reg.SP) {// stack Pointer
-					short ans = (short) (wrs.getStackPointer() - 1);
+					int ans = wrs.getStackPointer() - 1;
 					wrs.setStackPointer(ans);
 				} else {
-					short ans = (short) (wrs.getDoubleReg(regPair) - 1);
+					int ans = wrs.getDoubleReg(regPair) - 1;
 					wrs.setDoubleReg(regPair, ans);
 				}// inner if
 					// System.out.printf("DCX %s%n", regPair);
@@ -422,7 +417,7 @@ public class CentralProcessingUnit implements MemoryListener {
 		int opCodeSize = 0;
 		Reg destRegister = registerDecode[yyy];
 		Reg sourceRegister = registerDecode[zzz];
-		short memoryLocation;
+		int memoryLocation;
 
 		if ((yyy == 6) & (zzz == 6)) { // HLT 76
 			setRunning(false);
@@ -464,7 +459,7 @@ public class CentralProcessingUnit implements MemoryListener {
 	private int opCodePage02(int yyy, int zzz) {
 		// identifyOpCode(ShowOpCode.None);
 		int opCodeSize = 0;
-		short memoryLocation;
+		int memoryLocation;
 		byte value = 00;
 		byte ans;
 		byte acc = wrs.getReg(Reg.A);
@@ -508,21 +503,21 @@ public class CentralProcessingUnit implements MemoryListener {
 			// System.out.printf("SBB %s%n",sourceRegister.toString());
 			break;
 		case 4:// yyy = 100
-			//ans = (byte) (acc & value);
+				// ans = (byte) (acc & value);
 			ans = au.logicalAnd(acc, value);
 			wrs.setReg(Reg.A, ans);
 			opCodeSize = 1;
 			// System.out.printf("ANA %s%n",sourceRegister.toString());
 			break;
 		case 5:// yyy = 101
-			//ans = (byte) (acc ^ value);
+				// ans = (byte) (acc ^ value);
 			ans = au.logicalXor(acc, value);
 			wrs.setReg(Reg.A, ans);
 			opCodeSize = 1;
 			// System.out.printf("XRA %s%n",sourceRegister.toString());
 			break;
 		case 6:// yyy = 110
-			//ans = (byte) (acc | value);
+				// ans = (byte) (acc | value);
 			ans = au.logicalOr(acc, value);
 			wrs.setReg(Reg.A, ans);
 			opCodeSize = 1;
@@ -547,6 +542,8 @@ public class CentralProcessingUnit implements MemoryListener {
 		CodeConditional condition = conditionDecode[yyy];
 		Reg regPair = registerPairDecodeSet2[yyy >> 1]; // only want the two
 														// high bits
+		byte valueByte;
+		int valueInt;
 		switch (zzz) {
 		case 0:// zzz = 000
 			if (opCodeConditionTrue(condition)) {
@@ -559,23 +556,23 @@ public class CentralProcessingUnit implements MemoryListener {
 			// System.out.printf("R%s%n", condition);
 			break;
 		case 1:// zzz = 001
-			short value;
+				// int value;
 
 			if ((yyy & 0X01) != 1) {
-				short stackLocation = wrs.getStackPointer();
-				short newStackLocation = (short) (stackLocation + 2);
+				int stackLocation = wrs.getStackPointer();
+				int newStackLocation = stackLocation + 2;
 				if (!isValidMemoryLocation(newStackLocation)) {
 					reportInvalidMemoryReference(newStackLocation);
 					return opCodeSize;
 				}// bad stack pointer
-				value = mm.popWord(stackLocation);
+				valueInt = mm.popWord(stackLocation);
 				if (regPair == Reg.AF) {
-					byte hiByte = (byte) (value >> 8);
-					byte loByte = (byte) (value & 0X00FF);
+					byte hiByte = (byte) ((valueInt >> 8) & 0X00FF);
+					byte loByte = (byte) (valueInt & 0X00FF);
 					wrs.setReg(Reg.A, hiByte);
 					ccr.setConditionCode(loByte);
 				} else {
-					wrs.setDoubleReg(regPair, value);
+					wrs.setDoubleReg(regPair, valueInt);
 				}// if
 				wrs.setStackPointer(newStackLocation);
 				opCodeSize = 1;
@@ -624,26 +621,26 @@ public class CentralProcessingUnit implements MemoryListener {
 					// System.out.printf("*JMP %n", "");
 				break;
 			case 2:// yyy = 010
-				value = wrs.getReg(Reg.A);
-				Byte address = mm.getByte(programCounter + 1);
-				dc.byteToDevice(address, (byte)value);
+				valueByte = wrs.getReg(Reg.A);
+				Byte IOaddress = mm.getByte(programCounter + 1);
+				dc.byteToDevice(IOaddress, (byte) valueByte);
 				opCodeSize = 2;
-					// System.out.printf("OUT %n", "");
+				// System.out.printf("OUT %n", "");
 				break;
 			case 3:// yyy = 011
-				 address = mm.getByte(programCounter + 1);
-				byte ans = dc.byteFromDevice(address);
+				IOaddress = mm.getByte(programCounter + 1);
+				byte ans = dc.byteFromDevice(IOaddress);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("IN %n", "");
+				// System.out.printf("IN %n", "");
 				break;
 			case 4:// yyy = 100
-				short hlValue = wrs.getDoubleReg(Reg.HL);
-				short stackLocation = wrs.getStackPointer();
-				value = mm.popWord(stackLocation);
-				wrs.setDoubleReg(Reg.HL, value);
+				int hlValue = wrs.getDoubleReg(Reg.HL);
+				int stackLocation = wrs.getStackPointer();
+				valueInt = mm.popWord(stackLocation);
+				wrs.setDoubleReg(Reg.HL, valueInt);
 
-				byte hiByte = (byte) (hlValue >> 8);
+				byte hiByte = (byte) ((hlValue >> 8) & 0X00FF);
 				// mm.setByte(stackLocation, hiByte);
 				byte loByte = (byte) (hlValue & 0X00FF);
 				// mm.setByte(stackLocation+1,loByte);
@@ -652,7 +649,7 @@ public class CentralProcessingUnit implements MemoryListener {
 				// System.out.printf("XTHL %n", "");
 				break;
 			case 5:// yyy = 101
-				short deValue = wrs.getDoubleReg(Reg.DE);
+				int deValue = wrs.getDoubleReg(Reg.DE);
 				wrs.setDoubleReg(Reg.DE, wrs.getDoubleReg(Reg.HL));
 				wrs.setDoubleReg(Reg.HL, deValue);
 				opCodeSize = 1;
@@ -716,64 +713,64 @@ public class CentralProcessingUnit implements MemoryListener {
 		case 6:// zzz = 110
 			byte ans;
 			byte accumulator = wrs.getReg(Reg.A);
-			byte immediateValue = mm.getByte(programCounter +1);
+			byte immediateValue = mm.getByte(programCounter + 1);
 			switch (yyy) {
 			case 0:// yyy = 000
-				ans = au.add(accumulator,immediateValue);
+				ans = au.add(accumulator, immediateValue);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("ADI%n", "");
+				// System.out.printf("ADI%n", "");
 				break;
 			case 1:// yyy = 001
-				ans = au.addWithCarry(accumulator,immediateValue);
+				ans = au.addWithCarry(accumulator, immediateValue);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("ACI%n", "");
+				// System.out.printf("ACI%n", "");
 				break;
 			case 2:// yyy = 010
-				ans = au.subtract(accumulator,immediateValue);
+				ans = au.subtract(accumulator, immediateValue);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("SUI%n", "");
+				// System.out.printf("SUI%n", "");
 				break;
 			case 3:// yyy = 011
-				ans = au.subtractWithBorrow(accumulator,immediateValue);
+				ans = au.subtractWithBorrow(accumulator, immediateValue);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("SBI%n", "");
+				// System.out.printf("SBI%n", "");
 				break;
 			case 4:// yyy = 100
 				ans = (byte) (accumulator & immediateValue);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("ANI%n", "");
+				// System.out.printf("ANI%n", "");
 				break;
 			case 5:// yyy = 101
 				ans = (byte) (accumulator ^ immediateValue);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("XRI%n", "");
+				// System.out.printf("XRI%n", "");
 				break;
 			case 6:// yyy = 110
 				ans = (byte) (accumulator | immediateValue);
 				wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("ORI%n", "");
+				// System.out.printf("ORI%n", "");
 				break;
 			case 7:// yyy = 111
-				ans = au.subtract(accumulator,immediateValue);
-				//wrs.setReg(Reg.A, ans);
+				ans = au.subtract(accumulator, immediateValue);
+				// wrs.setReg(Reg.A, ans);
 				opCodeSize = 2;
-					// System.out.printf("CPI%n", "");
+				// System.out.printf("CPI%n", "");
 				break;
 			}// switch(yyy)
 			break;
 		case 7:// zzz = 111
-			short address = (short) (yyy << 3);
-			opCode_Push(programCounter +1);
+			int address = (yyy << 3) & 0XFFFF;
+			opCode_Push(programCounter + 1);
 			this.setProgramCounter(address);
 			opCodeSize = 0;
-				// System.out.printf("RST %d%n", yyy);
+			// System.out.printf("RST %d%n", yyy);
 			break;
 		default:
 			badOpCode();
@@ -793,14 +790,14 @@ public class CentralProcessingUnit implements MemoryListener {
 	}
 
 	private void opCode_Return() {
-		short stackPointer = wrs.getStackPointer();
-		short oldPC = mm.popWord(stackPointer);
+		int stackPointer = wrs.getStackPointer();
+		int oldPC = mm.popWord(stackPointer);
 		if (!isValidMemoryLocation(oldPC)) {
 			reportInvalidMemoryReference(oldPC);
 			return; //
 		}// if memory check
 		programCounter = oldPC;
-		wrs.setStackPointer((short) (stackPointer + 2));
+		wrs.setStackPointer(stackPointer + 2);
 	}// opCode_Return
 
 	private void opCode_Call() {
@@ -808,13 +805,6 @@ public class CentralProcessingUnit implements MemoryListener {
 		if (!isValidMemoryLocation(memoryLocation)) {
 			reportInvalidMemoryReference(memoryLocation + 1);
 		} else {
-			// byte pcHiByte = (byte) ((programCounter + 3) >> 8);
-			// byte pcLoByte = (byte) ((programCounter + 3) & 0X00FF);
-			// short stackLocation = wrs.getStackPointer();
-			// mm.pushWord(stackLocation, pcHiByte, pcLoByte); // push the
-			// return
-			// // address
-			// wrs.setStackPointer((short) (stackLocation - 2));
 			opCode_Push(programCounter + 3);
 			this.setProgramCounter(memoryLocation);
 			// opCodeSize = 0;
@@ -824,10 +814,10 @@ public class CentralProcessingUnit implements MemoryListener {
 	private void opCode_Push(int value) {
 		byte hiByte = (byte) (value >> 8);
 		byte loByte = (byte) (value & 0X00FF);
-		short stackLocation = wrs.getStackPointer();
+		int stackLocation = wrs.getStackPointer();
 		mm.pushWord(stackLocation, hiByte, loByte); // push the return
 													// address
-		wrs.setStackPointer((short) (stackLocation - 2));
+		wrs.setStackPointer(stackLocation - 2);
 	}// opCode_Push
 
 	private boolean opCodeConditionTrue(CodeConditional condition) {
@@ -865,7 +855,7 @@ public class CentralProcessingUnit implements MemoryListener {
 
 	private void badOpCode() {
 		StringBuilder sb = new StringBuilder();
-		String rawCode = valueToBinaryString(opCode,Byte.SIZE);
+		String rawCode = valueToBinaryString(opCode, Byte.SIZE);
 		sb.append(rawCode.substring(0, 2));
 		sb.append(" ");
 		sb.append(rawCode.substring(2, 5));
@@ -879,7 +869,7 @@ public class CentralProcessingUnit implements MemoryListener {
 		this.setRunning(false); // stop executing
 		return;
 	}//
-	
+
 	public static String valueToBinaryString(int value, int wordSize) {
 		// int valuex = (int)value;
 		String tempAns = Integer.toBinaryString(value);
@@ -894,25 +884,25 @@ public class CentralProcessingUnit implements MemoryListener {
 			// tempAns is OK
 		}// if
 		return tempAns;
-		
-	}//valueToBinaryString
-//	private byte getByteImmediate() {
-//		return mm.getByte(programCounter++);
-//	}// getImmediateByte
-//
-//	private byte getByteIndirect(Reg reg) {
-//		return mm.getByte(wrs.getDoubleReg(reg));
-//	}// getByteIndirect
-//
-//	private void badmemoryLocation(int badLocation) {
-//		String message = String
-//				.format("Attempted to access memory location (%04X) above curent max memory",
-//						badLocation);
-//		JOptionPane.showMessageDialog(null, message, "memory access error",
-//				JOptionPane.ERROR_MESSAGE);
-//		return; // exit gracefully
-//	}// badmemoryLocation
-	
+
+	}// valueToBinaryString
+		// private byte getByteImmediate() {
+	// return mm.getByte(programCounter++);
+	// }// getImmediateByte
+	//
+	// private byte getByteIndirect(Reg reg) {
+	// return mm.getByte(wrs.getDoubleReg(reg));
+	// }// getByteIndirect
+	//
+	// private void badmemoryLocation(int badLocation) {
+	// String message = String
+	// .format("Attempted to access memory location (%04X) above curent max memory",
+	// badLocation);
+	// JOptionPane.showMessageDialog(null, message, "memory access error",
+	// JOptionPane.ERROR_MESSAGE);
+	// return; // exit gracefully
+	// }// badmemoryLocation
+
 	private void badmemoryOpCode(int badLocation) {
 		String message = String.format(
 				"Bad OpCode decode at memory location (%04X) ", badLocation);
@@ -954,24 +944,24 @@ public class CentralProcessingUnit implements MemoryListener {
 		System.out.printf("beginTesting1 done%n", "");
 	}// beginTesting1
 
-//	private void identifyOpCode(ShowOpCode show) {// have not used yet
-//		if (show == ShowOpCode.None) {
-//			return;// do nothing
-//		} else if (show == ShowOpCode.Brief) {
-//			System.out.printf("opCode %02X: ", opCode);
-//
-//		} else if (show == ShowOpCode.Extended) {
-//			String opCodeOctal = Stuff.opCodeToOctal(opCode);
-//			System.out
-//					.printf("opCode %02X: %s  - Page %02X with YYY = %02X with ZZZ = %02X%n",
-//							opCode, opCodeOctal, page, yyy, zzz);
-//		}// if
-//		return;
-//	}// identifyOpCode
+	// private void identifyOpCode(ShowOpCode show) {// have not used yet
+	// if (show == ShowOpCode.None) {
+	// return;// do nothing
+	// } else if (show == ShowOpCode.Brief) {
+	// System.out.printf("opCode %02X: ", opCode);
+	//
+	// } else if (show == ShowOpCode.Extended) {
+	// String opCodeOctal = Stuff.opCodeToOctal(opCode);
+	// System.out
+	// .printf("opCode %02X: %s  - Page %02X with YYY = %02X with ZZZ = %02X%n",
+	// opCode, opCodeOctal, page, yyy, zzz);
+	// }// if
+	// return;
+	// }// identifyOpCode
 
-//	private enum ShowOpCode {
-//		None, Brief, Extended
-//	}
+	// private enum ShowOpCode {
+	// None, Brief, Extended
+	// }
 
 	@Override
 	public void protectedMemoryAccess(MemoryEvent me) {

@@ -38,7 +38,7 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 
 	private final JPanel contentPanel = new JPanel();
 
-	private short baseAddress;
+	private int baseAddress;
 	private JTextField txtASCII;
 	JFormattedTextField ftfValues;
 	JFormattedTextField ftfAddress;
@@ -123,7 +123,7 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 		commitButton.setEnabled(false);
 	}//updateMemory
 
-	private void displayValues(short address) {
+	private void displayValues(int address) {
 		StringBuilder sbValues = new StringBuilder();
 		StringBuilder sbASCII = new StringBuilder();
 		byte thisByte;
@@ -145,7 +145,7 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 	 * show the dialog
 	 */
 	public static String showDialog(Component frameComp,
-			Component locationComp, MainMemory mm, short address) {
+			Component locationComp, MainMemory mm, int address) {
 		Frame frame = JOptionPane.getFrameForComponent(frameComp);
 		memoryEdit = new MemoryEdit(frame, mm, address);
 		memoryEdit.setVisible(true);
@@ -153,7 +153,7 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 	}//showDialog
 	
 	// non Swing setup
-	private void initialize(MainMemory mm, short address){	
+	private void initialize(MainMemory mm, int address){	
 		dialogValue = MemoryEdit.Cancel;
 		this.mm = mm;
 		maxMemory = (short) mm.getMemorySizeInBytes();
@@ -168,7 +168,7 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 	/**
 	 * Create the dialog.
 	 */
-	public MemoryEdit(Frame frame, MainMemory mm, short address) {
+	public MemoryEdit(Frame frame, MainMemory mm, int address) {
 		super(frame, "Memory Editor", true);
 		// setTitle("Memory Editor");
 		try {

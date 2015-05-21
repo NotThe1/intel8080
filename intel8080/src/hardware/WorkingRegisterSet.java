@@ -10,7 +10,7 @@ public class WorkingRegisterSet implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private short stackPointer = 0000;
+	private int stackPointer = 0000;
 
 	private HashMap<Reg, Byte> registers;
 
@@ -31,7 +31,7 @@ public class WorkingRegisterSet implements Serializable {
 	/**
 	 * @return the stackPointer
 	 */
-	protected short getStackPointer() {
+	protected int getStackPointer() {
 		return stackPointer;
 	}// getStackPointer
 
@@ -39,12 +39,12 @@ public class WorkingRegisterSet implements Serializable {
 	 * @param stackPointer
 	 *            the stackPointer to set
 	 */
-	protected void setStackPointer(short stackPointer) {
+	protected void setStackPointer(int stackPointer) {
 		this.stackPointer = stackPointer;
 	}// setStackPointer
 
 	protected void setStackPointer(byte hiByte, byte loByte) {
-		this.stackPointer = (short) ((hiByte << 8) + loByte);
+		this.stackPointer = (int) (((hiByte << 8) + loByte) & 0XFFFF);
 	}//setStackPointer
 
 	public void setReg(Reg reg, byte value) {
@@ -55,9 +55,9 @@ public class WorkingRegisterSet implements Serializable {
 		return registers.get(reg);
 	}// getReg
 
-	public void setDoubleReg(Reg reg, short value) {
+	public void setDoubleReg(Reg reg, int value) {
 		// should only be for HL
-		short hi = (short) (value & 0XFF00);
+		int hi = value & 0XFF00;
 		byte hiByte = (byte) ((hi >> 8) & 0XFF);
 		byte loByte = (byte) (value & 0XFF);
 
@@ -83,7 +83,7 @@ public class WorkingRegisterSet implements Serializable {
 		return;
 	}// setDoubleReg
 
-	public short getDoubleReg(Reg reg) {
+	public int getDoubleReg(Reg reg) {
 		byte hi = 0;
 		byte lo = 0;
 
@@ -107,7 +107,7 @@ public class WorkingRegisterSet implements Serializable {
 		default:
 			// just use 0;
 		}// switch
-		short result = (short) (((hi << 8) + (lo & 0XFF)) & 0XFFFF);
+		int result =  (((hi << 8) + (lo & 0XFF)) & 0XFFFF);
 		// short hiShort = (short) ((hi << 8) & 0XFF00);
 		// result = (short) ((hiShort | lo) & 0XFFFF);
 		return result;

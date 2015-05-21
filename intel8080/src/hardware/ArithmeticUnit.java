@@ -38,8 +38,8 @@ public class ArithmeticUnit {
 		return result;
 	}// add(byte operand1, byte operand2)
 
-	public short add(short operand1, short operand2) {
-		return (short) add((int) operand1, (int) operand2, Short.SIZE);
+	public int add(int operand1, int operand2) { // add words
+		return  add( operand1,  operand2,16);
 		//set Carry , but does not set Sign, Zero or Parity
 	}// add(short operand1, short operand2)
 

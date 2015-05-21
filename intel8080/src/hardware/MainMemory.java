@@ -85,21 +85,18 @@ public class MainMemory implements Serializable {
 		memory[location - 2] = loByte;
 	}// pushWord used for stack work
 
-	public short popWord(int location) {
+	public int popWord(int location) {
 		location = location & 0XFFFF;
-		return (short) ((memory[location] & 0XFF) + ((short) memory[location + 1] << 8));
+		return (int) ((memory[location] & 0XFF) + ((int) memory[location + 1] << 8));
 	}// popWord
 
 	private void checkAddress(int location) {
-		int shortLocation = (location & 0XFFFF);
-		if (shortLocation < PROTECTED_MEMORY) {
+		if (location < PROTECTED_MEMORY) {
 			// protection violation
 			fireProtectedMemoryAccess(location);
-
-		} else if (shortLocation > allocatedMemory) {
+		} else if (location > allocatedMemory) {
 			// out of bounds error
 			fireInvalidMemoryAccess(location);
-
 		}// if
 		return; // all is good
 	}// checkAddress
@@ -118,6 +115,7 @@ public class MainMemory implements Serializable {
 		memoryListeners.remove(ml);
 	}// removeMemoryListener
 
+	@SuppressWarnings("unchecked")
 	private void fireProtectedMemoryAccess(int location) {
 		Vector<MemoryListener> mls;
 		synchronized (this) {
@@ -134,6 +132,7 @@ public class MainMemory implements Serializable {
 		}// for
 	}// fireProtectedMemoryAccess
 
+	@SuppressWarnings("unchecked")
 	private void fireInvalidMemoryAccess(int location) {
 		Vector<MemoryListener> mls;
 		synchronized (this) {
