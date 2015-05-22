@@ -6,9 +6,7 @@ import java.util.Vector;
 
 //need to throw address out of bounds error, protection violation
 public class MainMemory implements Serializable {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
 	int K = 1024;
 	int PROTECTED_MEMORY = 0; // 100;

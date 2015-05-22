@@ -941,7 +941,7 @@ public class CentralProcessingUnit implements MemoryListener {
 			execute8080Instruction(opCode);
 		}// for
 		System.out.println();
-		System.out.printf("beginTesting1 done%n", "");
+		System.out.printf("beginTesting1 done%n");
 	}// beginTesting1
 
 	// private void identifyOpCode(ShowOpCode show) {// have not used yet

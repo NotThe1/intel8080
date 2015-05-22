@@ -129,8 +129,9 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 		byte thisByte;
 		for (short i = 0; i <= 15; i++) {
 			thisByte = mm.getByte(address + i);
+			int thisInt = ((int)(thisByte) & 0X00FF);
 			sbValues.append(String.format("%02X",thisByte ));
-			sbASCII.append(((thisByte >= 32) && (thisByte <= 127)) ? (char) thisByte: '.');
+			sbASCII.append(((thisInt >= 32) && (thisInt <= 127)) ? (char) thisByte: '.');
 			if (i== 6){
 				sbASCII.append(' ');
 			}
