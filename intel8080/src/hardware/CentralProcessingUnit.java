@@ -4,6 +4,7 @@ import javax.swing.JOptionPane;
 
 import device.DeviceController;
 
+
 public class CentralProcessingUnit implements MemoryListener {
 
 	private boolean running = false;
