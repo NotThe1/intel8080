@@ -35,7 +35,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.JTextComponent;
 //import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.MaskFormatter;
-import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -74,13 +73,13 @@ import java.awt.event.WindowEvent;
 
 //import org.eclipse.wb.swing.FocusTraversalOnArray;
 
-import java.awt.Component;
 
 public class Machine8080 implements PropertyChangeListener, MouseListener,
 		FocusListener, ItemListener,ActionListener {
 
 	public static final int MEMORY_SIZE_K = 64; // in K
 	private static final int MEMORY_SIZE_BYTES = MEMORY_SIZE_K * 1024;
+	private Core core;
 	private MainMemory mm;
 	private ConditionCodeRegister ccr;
 	private WorkingRegisterSet wrs;
@@ -344,9 +343,6 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 		ftfReg_M.setValue(getByteDisplayValue(value));
 	}// showRegM
 
-//	private String generateMemoryDisplay(short memoryStart, short memoryLength) {
-//		memoryStart = (short) (memoryStart & (short) 0XFFF0); // start at xxx0
-//		memoryLength = (short) (memoryLength | (short) 0X000F); // end at yyyF
 		private String generateMemoryDisplay(int memoryStart, int memoryLength) {
 		memoryStart =  memoryStart &  0XFFF0; // start at xxx0
 		memoryLength =  memoryLength | 0X000F; // end at yyyF
@@ -388,9 +384,6 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 	private void showImmediateValues(int thisLocation) {
 		ftfCurrentByte.setValue(getByteDisplayValue(mm.getByte(thisLocation)));
 		ftfNextByte.setValue(getByteDisplayValue(mm.getByte(thisLocation + 1)));
-		if(thisLocation == 0X107E){
-			int a = 0;
-		}
 		ftfNextWord.setValue(getWordDisplayValue(mm.getWord(thisLocation + 1)));
 	}
 
@@ -418,16 +411,13 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 				cpu.getProgramCounter(), memoryStart, memoryLength);
 
 		try {
-			// FileOutputStream fileStream = new FileOutputStream(fileName+
-			// FILE_SUFFIX_PERIOD);
-			// ObjectOutputStream oos = new ObjectOutputStream(fileStream);
 			ObjectOutputStream oos = new ObjectOutputStream(
 					new FileOutputStream(fileName + FILE_SUFFIX_PERIOD));
 
 			oos.writeObject(currentState);
 			oos.writeObject(ccr);
 			oos.writeObject(wrs);
-			oos.writeObject(mm);
+			oos.writeObject(core);
 			// currentMachineName = fileName;
 			oos.close();
 		} catch (IOException ioe) {
@@ -449,24 +439,27 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 			savedState = (MachineState8080) ois.readObject();
 			ccr = (ConditionCodeRegister) ois.readObject();
 			wrs = (WorkingRegisterSet) ois.readObject();
-			mm = (MainMemory) ois.readObject();
+			core = (Core) ois.readObject();
+			//mm = (MainMemory) ois.readObject();
 			currentMachineName = fileName;
-			int k = mm.getSizeInK();
-			// frm8080Emulator.setTitle(fileName);
+			//int k = core.getSize();
+			frm8080Emulator.setTitle(fileName);
 			ois.close();
 		} catch (Exception e) {
 			System.err.printf(
 					"Not able to completely restore machine state%n %s%n",
 					e.getMessage());
 
-			savedState = new MachineState8080(10, 10, 10);
-			mm = new MainMemory(MEMORY_SIZE_K);
-			for (int i = 0; i < MEMORY_SIZE_BYTES; i++) {
-				mm.setByte(i, (byte) i);
-			}// for seeding memory
+			savedState = new MachineState8080(0X0100, 0X0100, 0X0400);
+//			mm = new MainMemory(MEMORY_SIZE_K);
+//			for (int i = 0; i < MEMORY_SIZE_BYTES; i++) {
+//				mm.setByte(i, (byte) i);
+//			}// for seeding memory
+			core = new Core(MEMORY_SIZE_BYTES);
 			ccr = new ConditionCodeRegister();
 			wrs = new WorkingRegisterSet();
 		}// try
+		mm = new MainMemory(core);
 
 		memoryStart = (short) savedState.getMemoryStart();
 		memoryLength = (short) savedState.getMemoryLength();
@@ -566,8 +559,10 @@ public class Machine8080 implements PropertyChangeListener, MouseListener,
 				cpu.setProgramCounter(displayProgramCounter);
 				memoryStart = initialValue;
 				memoryLength = (short) (initialValue + 15);
+				core = null;
+				core = new Core(MEMORY_SIZE_BYTES);
 				mm = null;
-				mm = new MainMemory(MEMORY_SIZE_K);
+				mm = new MainMemory(core);
 				wrs.initialize();
 				loadTheDisplay();
 

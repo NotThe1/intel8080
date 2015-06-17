@@ -27,7 +27,8 @@ import javax.swing.SwingConstants;
 
 import java.awt.Color;
 
-public class MemoryEdit extends JDialog implements PropertyChangeListener,ActionListener {
+public class MemoryEdit extends JDialog implements PropertyChangeListener,
+		ActionListener {
 
 	/**
 	 * 
@@ -49,12 +50,11 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 	private JButton okButton;
 	private JButton cancelButton;
 	private JButton commitButton;
-	
-	private MainMemory mm;
-	//private short address;
-	private short maxMemory;
-	private HashMap<Integer, Byte> memoryImage;
 
+	private MainMemory mm;
+	// private short address;
+	private int maxMemory;
+	private HashMap<Integer, Byte> memoryImage;
 
 	@Override
 	public void actionPerformed(ActionEvent ae) {
@@ -71,18 +71,20 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 			updateMemory();
 			break;
 		case "Plus":
-			baseAddress = (short) (((baseAddress +0X10) >= maxMemory)?baseAddress:baseAddress + 0X10);
+			baseAddress = ((baseAddress + 0X10) >= maxMemory) ? baseAddress
+					: baseAddress + 0X10;
 			ftfAddress.setValue(String.format("%04X", baseAddress));
 			break;
 		case "Minus":
-			baseAddress = (short) (((baseAddress -0X10) < 0)?baseAddress:baseAddress - 0X10);
+			baseAddress = ((baseAddress - 0X10) < 0) ? baseAddress
+					: baseAddress - 0X10;
 			ftfAddress.setValue(String.format("%04X", baseAddress));
 			break;
 		default:
 		}// switch
 
-	}//actionPerformed
-	
+	}// actionPerformed
+
 	@Override
 	public void propertyChange(PropertyChangeEvent pce) {
 		String newValue = (String) pce.getNewValue();
@@ -95,33 +97,32 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 			Scanner sc = new Scanner((String) ftfValues.getValue());
 			for (int i = 0; i <= 15; i++) {
 				int value = Integer.valueOf(sc.next(), 16);
-				try{
+				try {
 					memoryImage.put(baseAddress + i, (byte) value);
-					
-				}catch(Exception e){
+
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
-		}// for
+			}// for
 			sc.close();
 			commitButton.setEnabled(true);
 			commitButton.setForeground(Color.RED);
 		}// if
 
-	
-	}//propertyChange
-	
-	private void updateMemory(){
+	}// propertyChange
+
+	private void updateMemory() {
 		Set<Integer> keys = memoryImage.keySet();
-		if( keys.isEmpty()){
+		if (keys.isEmpty()) {
 			return; // nothing to update
-		}//if
-		for(int key:keys){
+		}// if
+		for (int key : keys) {
 			mm.setByte(key, memoryImage.get(key));
 		}//
 		memoryImage.clear(); // start with fresh values
-		//commitButton.setForeground(Color.RED);
+		// commitButton.setForeground(Color.RED);
 		commitButton.setEnabled(false);
-	}//updateMemory
+	}// updateMemory
 
 	private void displayValues(int address) {
 		StringBuilder sbValues = new StringBuilder();
@@ -129,10 +130,11 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 		byte thisByte;
 		for (short i = 0; i <= 15; i++) {
 			thisByte = mm.getByte(address + i);
-			int thisInt = ((int)(thisByte) & 0X00FF);
-			sbValues.append(String.format("%02X",thisByte ));
-			sbASCII.append(((thisInt >= 32) && (thisInt <= 127)) ? (char) thisByte: '.');
-			if (i== 6){
+			int thisInt = ((int) (thisByte) & 0X00FF);
+			sbValues.append(String.format("%02X", thisByte));
+			sbASCII.append(((thisInt >= 32) && (thisInt <= 127)) ? (char) thisByte
+					: '.');
+			if (i == 6) {
 				sbASCII.append(' ');
 			}
 		}// for
@@ -151,20 +153,20 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 		memoryEdit = new MemoryEdit(frame, mm, address);
 		memoryEdit.setVisible(true);
 		return dialogValue;
-	}//showDialog
-	
+	}// showDialog
+
 	// non Swing setup
-	private void initialize(MainMemory mm, int address){	
+	private void initialize(MainMemory mm, int address) {
 		dialogValue = MemoryEdit.Cancel;
 		this.mm = mm;
-		maxMemory = (short) mm.getMemorySizeInBytes();
+		maxMemory =  this.mm.getMemorySizeInBytes();
 		memoryImage = new HashMap<Integer, Byte>();
 		ftfAddress.setInputVerifier(new MemoryLimitVerifier(mm.getSizeInK())); // limit
 		displayValues(address);
-		String ba = Integer.toHexString(baseAddress);
+		String ba = String.format("%04X", baseAddress);
 		ftfAddress.setText(ba);
-		
-	}//initialize
+
+	}// initialize
 
 	/**
 	 * Create the dialog.
@@ -173,7 +175,7 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 		super(frame, "Memory Editor", true);
 		// setTitle("Memory Editor");
 		try {
-			format4HexDigits = new MaskFormatter("HHH0");
+			format4HexDigits = new MaskFormatter("HHHH");
 			format16HexDigits = new MaskFormatter(
 					"HH HH HH HH HH HH HH HH  HH HH HH HH HH HH HH HH  ");
 		} catch (ParseException e) {
@@ -196,7 +198,7 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 
 		ftfValues = new JFormattedTextField((format16HexDigits));
 		ftfValues.addPropertyChangeListener("value", this);
-		//ftfValues.setText("");
+		// ftfValues.setText("");
 		ftfValues.setName("ftfValues");
 		ftfValues.setFont(new Font("Courier New", Font.BOLD, 14));
 		ftfValues.setBounds(65, 62, 400, 20);
@@ -216,8 +218,8 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 
 		ftfAddress = new JFormattedTextField((format4HexDigits));
 
-		//ftfAddress.setText("");
-		
+		// ftfAddress.setText("");
+
 		ftfAddress.setName("ftfAddress");
 		ftfAddress.addPropertyChangeListener("value", this);
 		ftfAddress.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -256,14 +258,12 @@ public class MemoryEdit extends JDialog implements PropertyChangeListener,Action
 		commitButton.setActionCommand("Commit");
 		commitButton.setBounds(67, 5, 208, 23);
 		buttonPane.add(commitButton);
-		
-		initialize(mm, address);   // non Swing setup
-		
+
+		initialize(mm, address); // non Swing setup
 
 	}// Constructor - (mm, address);
+
 	public static String OK = "OK";
 	public static String Cancel = "Cancel";
-
-
 
 }// class MemoryEdit

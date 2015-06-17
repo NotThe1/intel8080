@@ -1,12 +1,13 @@
 package hardware;
 
 import java.io.Serializable;
-//import java.util.HashMap;
-import java.util.Vector;
+
+import javax.swing.JOptionPane;
 
 //need to throw address out of bounds error, protection violation
-public class MainMemory implements Serializable {
-	
+public class MainMemory implements Serializable, MemoryAccessErrorListener,
+		MemoryTrapListener {
+
 	private static final long serialVersionUID = 1L;
 	int K = 1024;
 	int PROTECTED_MEMORY = 0; // 100;
@@ -14,45 +15,31 @@ public class MainMemory implements Serializable {
 	int MAXIMUM_MEMORY = 64 * K;
 	int DEFAULT_MEMORY = 16 * K;
 
-	private byte[] memory;
-	private int allocatedMemory;
+	// private byte[] memory;
+	Core core;
+//	private int allocatedMemory;
 
-	public MainMemory(int sizeInK) {
-		// check size of memory
-		allocatedMemory = ((sizeInK * K > MAXIMUM_MEMORY) || (sizeInK * K < MINIMUM_MEMORY)) ? DEFAULT_MEMORY : sizeInK
-				* K;
-		memory = new byte[allocatedMemory];
-	}// Constructor - MainMemory(size)
+	public MainMemory(Core core) {
+		this.core = core;
+		core.addMemoryAccessErrorListener(this);
+		core.addMemoryTrapListener(this);
 
-	public MainMemory() {
-		allocatedMemory = DEFAULT_MEMORY;
-		memory = new byte[allocatedMemory];
-	}// Constructor - MainMemory(size)
+//		allocatedMemory = core.getSize();
+	}
 
 	public byte getByte(int location) {
-		location = location & 0XFFFF;
-		checkAddress(location);
-		try {
-			return memory[location];
-		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("location = " + location);
-			System.exit(-1);
-			return (byte) 0;
-		}
+			return core.read(location);
 	}// getByte
 
 	public void setByte(int location, byte value) {
-		location = location & 0XFFFF;
-		checkAddress(location);
-		memory[location] = value;
+		core.write(location, value);
 	}// putByte
 
 	public int getWord(int location) {
-		location = location & 0XFFFF;
-		checkAddress(location - 1);
-		int hiByte = (memory[location] << 8) & 0XFF00;
-		int loByte = memory[location + 1] & 0X00FF;
-		return hiByte + loByte;
+
+		int hiByte = (core.read(location) << 8) & 0XFF00;
+		int loByte = core.read(location +1) & 0X00FF;
+		return 0XFFFF & (hiByte + loByte);
 	}// getWord
 
 	/*
@@ -60,103 +47,52 @@ public class MainMemory implements Serializable {
 	 * byte
 	 */
 	public int getWordReversed(int location) {
-		location = location & 0XFFFF;
-		checkAddress(location - 1);
-		
-		int loByte = (memory[location+1] << 8) & 0XFF00;
-		int hiByte = memory[location ] & 0X00FF;
-		return hiByte + loByte;
+
+		int loByte = (core.read(location + 1) << 8) & 0XFF00;
+		int hiByte = core.read(location) & 0X00FF;
+		return 0XFFFF & (hiByte + loByte);
 
 	}// getWord
 
 	public void setWord(int location, byte hiByte, byte loByte) {
-		location = location & 0XFFFF;
-		checkAddress(location - 1);
-		memory[location] = hiByte;
-		memory[location + 1] = loByte;
+		core.write(location, hiByte);
+		core.write(location + 1, loByte);
+
 	}// putWord
 
 	public void pushWord(int location, byte hiByte, byte loByte) {
-		location = location & 0XFFFF;
-		checkAddress(location);
-		memory[location - 1] = hiByte;
-		memory[location - 2] = loByte;
+		core.write(location - 1, hiByte);
+		core.write(location - 2, loByte);
 	}// pushWord used for stack work
 
 	public int popWord(int location) {
-		location = location & 0XFFFF;
-		return (int) ((memory[location] & 0XFF) + ((int) memory[location + 1] << 8));
+		return (int) ((core.read(location)) + ((int) core.read(location+1) <<8));
+		//return (int) ((memory[location] & 0XFF) + ((int) memory[location + 1] << 8));
 	}// popWord
 
-	private void checkAddress(int location) {
-		if (location < PROTECTED_MEMORY) {
-			// protection violation
-			fireProtectedMemoryAccess(location);
-		} else if (location > allocatedMemory) {
-			// out of bounds error
-			fireInvalidMemoryAccess(location);
-		}// if
-		return; // all is good
-	}// checkAddress
-
-	// Handle memory events
-	private Vector<MemoryListener> memoryListeners = new Vector<MemoryListener>();
-
-	public synchronized void addMemoryListener(MemoryListener ml) {
-		if (memoryListeners.contains(ml)) {
-			return; // Already here
-		}// if
-		memoryListeners.addElement(ml);
-	}// addMemoryListener
-
-	public synchronized void removeMemoryListener(MemoryListener ml) {
-		memoryListeners.remove(ml);
-	}// removeMemoryListener
-
-	@SuppressWarnings("unchecked")
-	private void fireProtectedMemoryAccess(int location) {
-		Vector<MemoryListener> mls;
-		synchronized (this) {
-			mls = (Vector<MemoryListener>) memoryListeners.clone();
-		}// sync
-		int size = mls.size();
-		if (0 == size) {
-			return; // no listeners
-		}// if
-		MemoryEvent memoryEvent = new MemoryEvent(this, location);
-		for (int i = 0; i < size; i++) {
-			MemoryListener listener = (MemoryListener) mls.elementAt(i);
-			listener.protectedMemoryAccess(memoryEvent);
-		}// for
-	}// fireProtectedMemoryAccess
-
-	@SuppressWarnings("unchecked")
-	private void fireInvalidMemoryAccess(int location) {
-		Vector<MemoryListener> mls;
-		synchronized (this) {
-			mls = (Vector<MemoryListener>) memoryListeners.clone();
-		}// sync
-		int size = mls.size();
-		if (0 == size) {
-			return; // no listeners
-		}// if
-		MemoryEvent memoryEvent = new MemoryEvent(this, location);
-		for (int i = 0; i < size; i++) {
-			MemoryListener listener = (MemoryListener) mls.elementAt(i);
-			listener.invalidMemoryAccess(memoryEvent);
-		}// for
-	}// fireProtectedMemoryAccess
-
-	// private void fireInvalidMemoryAccess(){
-	//
-	// }//fireProtectedMemoryAccess
+	
 
 	public int getMemorySizeInBytes() {
-		return allocatedMemory;
+		return core.getSize();
 	}// getSize
 
 	public int getSizeInK() {
-		return (int) (allocatedMemory / K);
+		return (int) (core.getSize() / K);
 	}// getSize
+
+	@Override
+	public void memoryTrap(MemoryTrapEvent mte) {
+		JOptionPane.showConfirmDialog(null, "choose one", "choose one",
+				JOptionPane.YES_NO_OPTION);
+	}
+
+	@Override
+	public void memoryAccessError(MemoryAccessErrorEvent mae) {
+		System.err.printf("%n%nFatal memory error%n%n");
+		System.err.printf(String.format("Location: %s%n", mae.getLocation()));
+		System.err.printf(String.format("%s%n", mae.getMessage()));
+		// System.exit(-1);
+
+	}
 
 }// class MainMemory

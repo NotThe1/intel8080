@@ -43,7 +43,7 @@ public class CentralProcessingUnit implements MemoryListener {
 			CodeConditional.M };
 
 	public CentralProcessingUnit() {
-		mm = new MainMemory(MEMORY_SIZE);
+		mm = new MainMemory(new Core(MEMORY_SIZE));
 		this.memorySizeInBytes = mm.getMemorySizeInBytes();
 		ccr = new ConditionCodeRegister();
 		au = new ArithmeticUnit(ccr);
