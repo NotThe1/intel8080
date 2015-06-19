@@ -5,13 +5,9 @@ import java.util.HashMap;
 
 public class WorkingRegisterSet implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	private int stackPointer = 0000;
-
 	private HashMap<Reg, Byte> registers;
 
 	public WorkingRegisterSet() {
@@ -22,29 +18,23 @@ public class WorkingRegisterSet implements Serializable {
 	public void initialize() {
 		Byte b = 0;
 		for (Reg r : Reg.values()) {
-			//getRegisters().put(r, b);
 			registers.put(r, b);
 		}// load all the registers with zeros
 		stackPointer = 0100; // set to a non zero value
 	}//initialize
 
-	/**
-	 * @return the stackPointer
-	 */
 	protected int getStackPointer() {
 		return stackPointer;
 	}// getStackPointer
 
-	/**
-	 * @param stackPointer
-	 *            the stackPointer to set
-	 */
 	protected void setStackPointer(int stackPointer) {
 		this.stackPointer = stackPointer;
 	}// setStackPointer
 
 	protected void setStackPointer(byte hiByte, byte loByte) {
-		this.stackPointer = (int) (((hiByte << 8) + loByte) & 0XFFFF);
+		int hi = (int)(hiByte * 256);
+		int lo = (int)(loByte & 0X00FF);
+		this.stackPointer = (hi + lo) & 0XFFFF;
 	}//setStackPointer
 
 	public void setReg(Reg reg, byte value) {
@@ -108,8 +98,7 @@ public class WorkingRegisterSet implements Serializable {
 			// just use 0;
 		}// switch
 		int result =  (((hi << 8) + (lo & 0XFF)) & 0XFFFF);
-		// short hiShort = (short) ((hi << 8) & 0XFF00);
-		// result = (short) ((hiShort | lo) & 0XFFFF);
+		
 		return result;
 	}// getDoubleReg
 

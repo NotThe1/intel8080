@@ -17,6 +17,7 @@ import javax.swing.border.TitledBorder;
 
 
 
+
 import java.awt.BorderLayout;
 
 import javax.swing.JLabel;
@@ -44,7 +45,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JCheckBox;
 
-//import controller.DeviceController;
 import device.DeviceController;
 
 import java.awt.event.FocusListener;
