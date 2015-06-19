@@ -17,6 +17,7 @@ public class Core implements Serializable {
 	private boolean trapEnabled;
 	private HashMap<Integer, TRAP> trapLocations; // locations that can be
 													// trapped duh!
+	private byte writeValue; // used for IO trap
 
 	public Core(Integer size) {
 		this(size, 0);
@@ -52,7 +53,8 @@ public class Core implements Serializable {
 	}// Constructor
 
 	public void write(int location, byte value) {
-		if (checkAddress(location) == true) {
+		writeValue = value; // save for IO trap
+		if (checkAddress(location, value) == true) {
 			storage[location] = value;
 		}// if
 	}// setContent
@@ -111,16 +113,26 @@ public class Core implements Serializable {
 			checkAddress = false;
 		} else if (trapLocations.containsKey(location)) {
 			switch (trapLocations.get(location)) {
-			case IO:
-				fireMemoryTrap(location, Core.TRAP.IO);
-				break;
 			case DEBUG:
 				if (trapEnabled) {
 					fireMemoryTrap(location, trapLocations.get(location));
 				}// if (trapEnabled);
-			}//switch
-		}//if
+			default:
+				// ignore switch set up for later enhancements
+			}// switch
+		}// if
 		return checkAddress; // true if all is good or a Trap
+	}// checkAddress
+
+	private boolean checkAddress(int location, byte value) {
+		if (trapLocations.containsKey(location)) {
+			if (trapLocations.get(location).equals(Core.TRAP.IO)) {
+				storage[location] = writeValue; // write so DCU has access to it
+				fireMemoryTrap(location, Core.TRAP.IO);
+				return true;
+			}// inner if
+		}//if
+		return checkAddress(location);
 	}// checkAddress
 
 	@SuppressWarnings("unchecked")
