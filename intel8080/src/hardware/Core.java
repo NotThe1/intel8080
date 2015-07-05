@@ -59,12 +59,33 @@ public class Core implements Serializable {
 		}// if
 	}// setContent
 
+	public void writeDMA(int location, byte[] values) {
+		int numberOfBytes = values.length;
+		if (checkAddressDMA(location, numberOfBytes) == true) {
+			for (int i = 0; i < numberOfBytes; i++) {
+				storage[location + i] = values[i];
+			}// for
+		}// if
+	}// writeDMA
+
 	public byte read(int location) {
 		if (checkAddress(location) == true) {
 			return storage[location];
 		}// if
 		return 00;
 	}// getContent
+
+	public byte[] readDMA(int location, int length) {
+		byte[] readDMA = new byte[length];
+		if (checkAddressDMA(location, length) == true) {
+			for (int i = 0; i < length; i++) {
+				readDMA[i] = storage[location + i];
+			}// for
+		} else {
+			readDMA = null;
+		}
+		return readDMA;
+	}// readDMA
 
 	public int getSize() {
 		return storage.length;
@@ -79,7 +100,7 @@ public class Core implements Serializable {
 	}// enableTrap
 
 	public boolean isTrapEnabled() {
-		return this.isTrapEnabled();
+		return this.trapEnabled;
 	}
 
 	// public boolean
@@ -105,12 +126,12 @@ public class Core implements Serializable {
 		boolean checkAddress = true;
 		if (location < protectedBoundary) {
 			// protection violation
-			fireAccessError(location, "Protected memory access");
 			checkAddress = false;
+			fireAccessError(location, "Protected memory access");
 		} else if (location > maximumAddress) {
 			// out of bounds error
-			fireAccessError(location, "Invalid memory location");
 			checkAddress = false;
+			fireAccessError(location, "Invalid memory location");
 		} else if (trapLocations.containsKey(location)) {
 			switch (trapLocations.get(location)) {
 			case DEBUG:
@@ -131,9 +152,18 @@ public class Core implements Serializable {
 				fireMemoryTrap(location, Core.TRAP.IO);
 				return true;
 			}// inner if
-		}//if
+		}// if
 		return checkAddress(location);
 	}// checkAddress
+
+	private boolean checkAddressDMA(int location, int length) {
+		boolean checkAddressDMA = true;
+		if ((location < protectedBoundary) | ((location + length) > maximumAddress)) {
+			checkAddressDMA = false;
+			fireAccessError(location, "Invalid DMA memory location");
+		}// if
+		return checkAddressDMA;
+	}
 
 	@SuppressWarnings("unchecked")
 	private void fireAccessError(int location, String errorType) {
