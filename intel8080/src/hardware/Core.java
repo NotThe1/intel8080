@@ -26,6 +26,14 @@ public class Core implements Serializable {
 	public Core(Integer size, Integer protectedBoundary) {
 		this.trapEnabled = false;
 		trapLocations = new HashMap<Integer, TRAP>();
+		int a =0;
+		try{
+			trapLocations.put(DISK_CONTROL_BYTE_40, TRAP.IO);
+		trapLocations.put(DISK_CONTROL_BYTE_45, TRAP.IO);
+		
+		}catch(Exception e){
+			System.err.printf("Bad put int trapLocations: %s not valid%n", e.getMessage());
+		}
 		if (size <= 0) {
 			System.err.printf("Memory size %d not valid%n", size);
 			System.exit(-1);
@@ -122,7 +130,7 @@ public class Core implements Serializable {
 
 	}// removeTrapLocation
 
-	private boolean checkAddress(int location) {
+	private boolean checkAddress(int location) { //used for reads
 		boolean checkAddress = true;
 		if (location < protectedBoundary) {
 			// protection violation
@@ -145,11 +153,12 @@ public class Core implements Serializable {
 		return checkAddress; // true if all is good or a Trap
 	}// checkAddress
 
-	private boolean checkAddress(int location, byte value) {
+	private boolean checkAddress(int location, byte value) {	//used for writes
 		if (trapLocations.containsKey(location)) {
 			if (trapLocations.get(location).equals(Core.TRAP.IO)) {
 				storage[location] = writeValue; // write so DCU has access to it
 				fireMemoryTrap(location, Core.TRAP.IO);
+				System.out.printf("Core.java - checkAddress line 153%n");
 				return true;
 			}// inner if
 		}// if
@@ -242,5 +251,8 @@ public class Core implements Serializable {
 	static int MINIMUM_MEMORY = 8 * K;
 	static int MAXIMUM_MEMORY = 64 * K;
 	static int DEFAULT_MEMORY = 16 * K;
+	
+	static Integer DISK_CONTROL_BYTE_40 = 0X0040;
+	static Integer DISK_CONTROL_BYTE_45 = 0X0045;
 
 }// class Mem
